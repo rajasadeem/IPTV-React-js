@@ -1,0 +1,5 @@
+export const SERIES = {
+    ADD_SERIES: "ADD_SERIES",
+    GET_SERIES: "GET_SERIES",
+    DELETE_SERIES: "DELETE_SERIES"
+}
