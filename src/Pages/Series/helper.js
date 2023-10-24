@@ -2,8 +2,12 @@ import { useEffect, useRef, useState } from "react"
 import useValidation from "../../Hooks/useValidation"
 import useSetDataInBrowserStorage from "../../Hooks/useSetDataInBrowserStorage"
 import { useDispatch, useSelector } from "react-redux"
-import { addNewFile, addSeries, deleteSeries, getAllSeries } from "../../Adapters/Apis/series"
-import { addNewSeries, deleteSelectedSeries, getSeries } from "../../Redux/Actions/Series"
+import { addGenreSeries, addNewFile, addSeries, deleteSeries, getAllSeries, getGenreSeries, updateFile, updateGenreSeries, updateSeries } from "../../Adapters/Apis/series"
+import { addNewSeries, deleteSelectedSeries, getSeries, updateSelectedSeries } from "../../Redux/Actions/Series"
+import { getAllGenres } from "../../Redux/Actions/Genre"
+import { getGenre } from "../../Adapters/Apis/Genre"
+import { useNavigate } from "react-router-dom"
+import { getAllGenreSeries } from "../../Redux/Actions/GenreSeries"
 
 const initialState = {
     name: "",
@@ -20,24 +24,64 @@ const useSeries = () => {
     } = useValidation()
 
     const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const [seriesId, setSeriesId] = useState("")
     const [deletePopup, setDeletePopup] = useState(false)
+    const [updatePopup, setUpdatePopup] = useState(false)
 
     const { getDataInCookies } = useSetDataInBrowserStorage()
+
+    const [updatedGenreSeries, setUpdatedGenreSeries] = useState(false)
 
     const [addLoader, setAddLoader] = useState(false)
     const [deleteLoader, setDeleteLoader] = useState(false)
     const [updateLoader, setUpdateLoader] = useState(false)
     const [getLoader, setGetLoader] = useState(false)
 
+    const [fileId, setFileId] = useState("")
+    const [genreSeriesId, setGenreSeriesId] = useState("")
+
     const state = useSelector(state => state)
     const series = state?.series?.series
+    const genre = state?.genre?.genres
+    const genreSeries = state?.genreSeries?.genreSeries
+    const option = genre.map(item => {
+        return {
+            value: item?._id,
+            label: item?.name
+        }
+    })
+    const [genreId, setGenreId] = useState("")
+    const onChangeDropDown = (item) => {
+        setGenreId(item?.value)
+        setGenreValue({
+            value: item?.value,
+            label: item?.label
+        })
+    }
 
     const [addPopup, setAddPopup] = useState(false)
     const [seriesData, setSeriesData] = useState(initialState)
     const [thumbnail, setThumbnail] = useState("")
     const [file, setFile] = useState("")
+
+
+    const getALLGenre = () => {
+        let token = getDataInCookies("token")
+        let succes = (response) => {
+            dispatch(getAllGenres(response?.data?.data))
+        }
+        let fail = () => {
+        }
+        dispatch(getGenre(token, succes, fail))
+    }
+
+    useEffect(() => {
+        if (genre?.length == 0) {
+            getALLGenre()
+        }
+    }, [])
 
     const displaySelectedImage = (file) => {
         const reader = new FileReader();
@@ -85,20 +129,31 @@ const useSeries = () => {
         }
         setThumbnail("")
     }
+
     const addNewSeriesHandler = () => {
         setAddLoader(true)
         const token = getDataInCookies("token")
         let success = (response) => {
-            setAddLoader(false)
             const seriesSucces = (response) => {
-                setAddLoader(false)
                 dispatch(addNewSeries(response?.data?.data))
-                setAddPopup(false)
-                setSeriesData(initialState)
-                onCloseFile()
+                let genreSeriesSuccess = (response) => {
+                    setAddLoader(false)
+                    setUpdatedGenreSeries(!updatedGenreSeries)
+                    setSeriesData(initialState)
+                    onCloseFile()
+                    setAddPopup(false)
+                }
+                let genreSeriesfail = () => {
+                    setAddLoader(false)
+                    setAddPopup(false)
+                }
+                const payload = {
+                    genre_id: genreId,
+                    series_id: response?.data?.data?._id
+                }
+                dispatch(addGenreSeries(token, payload, genreSeriesSuccess, genreSeriesfail))
             }
             const seriesFail = () => {
-                setAddLoader(false)
             }
             const payload = {
                 name: seriesData?.name,
@@ -109,11 +164,84 @@ const useSeries = () => {
             dispatch(addSeries(token, payload, seriesSucces, seriesFail))
         }
         let fail = () => {
-            setAddLoader(false)
         }
         const formData = new FormData()
         formData.append('file', file)
         dispatch(addNewFile(token, formData, success, fail))
+    }
+
+    const token = getDataInCookies("token")
+    const updateSeriesHandler = () => {
+        if (file) {
+            setUpdateLoader(true)
+            let success = (response) => {
+                let seriesSucces = (response) => {
+                    dispatch(updateSelectedSeries(response?.data?.data))
+                    let genreSeriesSuccess = (response) => {
+                        setUpdateLoader(false)
+                        setUpdatedGenreSeries(!updatedGenreSeries)
+                        setSeriesData(initialState)
+                        onCloseFile()
+                        setUpdatePopup(false)
+                    }
+                    let genreSeriesfail = () => { }
+                    const payload = {
+                        genre_id: genreId,
+                    }
+                    dispatch(updateGenreSeries(token, genreSeriesId, payload, genreSeriesSuccess, genreSeriesfail))
+                }
+                let seriesFail = () => { }
+                const payload = {
+                    name: seriesData?.name,
+                    description: seriesData?.description,
+                    trailer_id: response?.data?.data?._id,
+                    thumbnail_id: response?.data?.data?._id,
+                }
+                dispatch(updateSeries(token, seriesId, payload, seriesSucces, seriesFail))
+
+            }
+            let fail = () => { }
+            const formdata = new FormData()
+            formdata.append('file', file)
+            dispatch(updateFile(token, fileId, formdata, success, fail))
+        }
+        else if (!file && seriesData?.name || seriesData?.description) {
+            setUpdateLoader(true)
+            let seriesSucces = (response) => {
+                dispatch(updateSelectedSeries(response?.data?.data))
+                let genreSeriesSuccess = (response) => {
+                    setUpdateLoader(false)
+                    setUpdatedGenreSeries(!updatedGenreSeries)
+                    setSeriesData(initialState)
+                    onCloseFile()
+                    setUpdatePopup(false)
+                }
+                let genreSeriesfail = () => { }
+                const payload = {
+                    genre_id: genreId,
+                }
+                dispatch(updateGenreSeries(token, genreSeriesId, payload, genreSeriesSuccess, genreSeriesfail))
+            }
+            let seriesFail = () => { }
+            if (seriesData?.name) {
+                const payload = {
+                    name: seriesData?.name,
+                }
+                dispatch(updateSeries(token, seriesId, payload, seriesSucces, seriesFail))
+            } else if (seriesData?.description) {
+                const payload = {
+                    name: seriesData?.name,
+                }
+                dispatch(updateSeries(token, seriesId, payload, seriesSucces, seriesFail))
+            }
+            else if (seriesData?.name && seriesData?.description) {
+                const payload = {
+                    name: seriesData?.name,
+                    description: seriesData?.description
+                }
+                dispatch(updateSeries(token, seriesId, payload, seriesSucces, seriesFail))
+            }
+        }
     }
 
     const getAllSeriesHandler = () => {
@@ -149,6 +277,34 @@ const useSeries = () => {
         dispatch(deleteSeries(token, seriesId, success, fail))
     }
 
+    const getGenreSeriesHandler = () => {
+        const token = getDataInCookies("token")
+        let success = (response) => {
+            dispatch(getAllGenreSeries(response?.data?.data))
+        }
+        let fail = () => { }
+        dispatch(getGenreSeries(token, success, fail))
+    }
+    useEffect(() => {
+        getGenreSeriesHandler()
+    }, [updatedGenreSeries])
+
+    const setGenreNameHandler = (e) => {
+        const item = genreSeries?.filter(ele => e?._id == ele?.series_id?._id)
+        return item
+    }
+    const [genreValue, setGenreValue] = useState("")
+    const genreSeriesIdHandler = (e) => {
+        const item = genreSeries?.filter(ele => e?._id == ele?.series_id?._id)
+        setGenreSeriesId(item[0]?._id)
+        const ele = genre?.filter(e => e?._id == item[0]?.genre_id?._id)
+        setGenreValue({
+            label: ele[0]?.name,
+            value: ele[0]?._id
+        })
+        setGenreId(ele[0]?._id)
+    }
+
 
     return {
         addPopup,
@@ -157,6 +313,7 @@ const useSeries = () => {
         errors,
         seriesData,
         thumbnail,
+        setThumbnail,
         setSeriesData,
         initialState,
         fileInputRef,
@@ -169,7 +326,16 @@ const useSeries = () => {
         deleteSeriesHandler,
         deleteLoader,
         addLoader,
-        getLoader
+        getLoader,
+        updatePopup,
+        setUpdatePopup,
+        genre,
+        option,
+        onChangeDropDown,
+        genreSeries,
+        setFileId,
+        updateSeriesHandler, updateLoader, setFile, setGenreId, genreId, setGenreNameHandler,
+        genreSeriesIdHandler, genreValue
     }
 
 }

@@ -21,3 +21,10 @@ export const deleteSelectedSeries = (data) => {
     }
 }
 
+export const updateSelectedSeries = (data) => {
+    return {
+        type: SERIES.UPDATE_SERIES,
+        payload: data
+    }
+}
+

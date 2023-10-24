@@ -14,8 +14,12 @@ export const ADD_NEW_GENRE = "genre"
 
 //FIle
 export const ADD_FILE = "file"
+export const UPDATE_FILE = "file/"
 
 //series
 export const ADD_SERIES = "series"
 export const GET_SERIES = "series"
 export const DELETE_SERIES = "series"
+export const UPDATE_SERIES = "series/"
+export const GENRE_SERIES = "genre-series"
+export const UPDATE_GENRE_SERIES = "genre-series/"

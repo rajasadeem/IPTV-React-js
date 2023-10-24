@@ -12,6 +12,18 @@ const filter = (payload, data) => {
     return data?.filter(item => item?._id !== payload?.id)
 }
 
+const update = (payload, data) => {
+    return data?.map((item) => {
+        if (item?._id == payload?._id) {
+            console.log("Updating Data");
+            return payload;
+        }
+        else {
+            return item;
+        }
+    })
+}
+
 const seriesReducer = (state = initialState, action) => {
     const { type, payload } = action
     const { series } = state
@@ -31,6 +43,11 @@ const seriesReducer = (state = initialState, action) => {
             return {
                 ...state,
                 series: filter(payload, series)
+            }
+        case SERIES.UPDATE_SERIES:
+            return {
+                ...state,
+                series: update(payload, series)
             }
         default:
             return {
