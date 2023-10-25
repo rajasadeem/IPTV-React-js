@@ -60,7 +60,7 @@ const Genre = () => {
                                 setGenreId(item?._id)
                             }}
                         >
-                            {item?.name}
+                            <div className="font-extrabold">{item?.name}</div>
                         </GenreButton>
                     )
                 }

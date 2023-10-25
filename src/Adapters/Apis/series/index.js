@@ -193,3 +193,23 @@ export const getGenreSeries = (token, success, fail) => async(dispatch) => {
     }
 }
 
+export const getSeriesByGenreId = (token, id, success, fail) => async (dispatch) => {
+    try{
+        const response = await axios({
+            method: "get",
+            url: `${BASE_URL}genre/${id}/series`,
+            headers: {
+                "Content-Type":"Application/json",
+                Authorization: `Bearer ${token}`
+            }
+        })
+        if(response?.data?.status == 200) {
+            success && success(response)
+        }
+    }
+    catch (error) {
+        fail && fail()
+        return error
+    }
+}
+

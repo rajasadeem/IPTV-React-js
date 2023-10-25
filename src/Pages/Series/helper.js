@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import useValidation from "../../Hooks/useValidation"
 import useSetDataInBrowserStorage from "../../Hooks/useSetDataInBrowserStorage"
 import { useDispatch, useSelector } from "react-redux"
-import { addGenreSeries, addNewFile, addSeries, deleteSeries, getAllSeries, getGenreSeries, updateFile, updateGenreSeries, updateSeries } from "../../Adapters/Apis/series"
+import { addGenreSeries, addNewFile, addSeries, deleteSeries, getAllSeries, getGenreSeries, getSeriesByGenreId, updateFile, updateGenreSeries, updateSeries } from "../../Adapters/Apis/series"
 import { addNewSeries, deleteSelectedSeries, getSeries, updateSelectedSeries } from "../../Redux/Actions/Series"
 import { getAllGenres } from "../../Redux/Actions/Genre"
 import { getGenre } from "../../Adapters/Apis/Genre"
@@ -30,7 +30,7 @@ const useSeries = () => {
     const [deletePopup, setDeletePopup] = useState(false)
     const [updatePopup, setUpdatePopup] = useState(false)
 
-    const { getDataInCookies } = useSetDataInBrowserStorage()
+    const { getDataInCookies, storeDataInLocalStorage } = useSetDataInBrowserStorage()
 
     const [updatedGenreSeries, setUpdatedGenreSeries] = useState(false)
 
@@ -256,9 +256,10 @@ const useSeries = () => {
         setGetLoader(true)
         dispatch(getAllSeries(token, success, fail))
     }
+    const [clearFilter, setClearFilter] = useState(false)
     useEffect(() => {
         getAllSeriesHandler()
-    }, [])
+    }, [clearFilter])
 
     const deleteSeriesHandler = () => {
         const token = getDataInCookies("token")
@@ -305,6 +306,38 @@ const useSeries = () => {
         setGenreId(ele[0]?._id)
     }
 
+    const [genreFilter, setGenreFilter] = useState("")
+    const [filterValue, setFilterValue] = useState("")
+    const filterOnChange = (e) => {
+        setGenreFilter(e?.value)
+        setFilterValue({
+            value: e?.value,
+            label: e?.label
+        })
+    }
+    const filterSeriesHandler = () => {
+        let success = (response) => {
+            dispatch(getSeries(response?.data?.data[0]?.Series))
+            setGetLoader(false)
+        }
+        let fail = () => {
+            setGetLoader(false)
+        }
+        setGetLoader(true)
+        dispatch(getSeriesByGenreId(token, genreFilter, success, fail))
+    }
+    useEffect(() => {
+        if(genreFilter){
+            filterSeriesHandler()
+        }
+    },[genreFilter])
+
+    const seriesOnClick = (e) => {
+        // navigate(`/seasons?id=${seriesId}&name=${seriesData?.name}`)
+        // alert("OnCLick")
+        // storeDataInLocalStorage("seriesId",)
+    }
+
 
     return {
         addPopup,
@@ -335,7 +368,8 @@ const useSeries = () => {
         genreSeries,
         setFileId,
         updateSeriesHandler, updateLoader, setFile, setGenreId, genreId, setGenreNameHandler,
-        genreSeriesIdHandler, genreValue
+        genreSeriesIdHandler, genreValue, filterOnChange, clearFilter, setClearFilter, setFilterValue, filterValue,
+        seriesOnClick, storeDataInLocalStorage, navigate
     }
 
 }

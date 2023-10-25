@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "../../Components/layout";
 import PostCard from "../../Components/postCard";
 import { BsFillPlusSquareFill } from "react-icons/bs";
@@ -10,6 +10,7 @@ import InputField from "../../Components/InputField";
 import Description from "../../Components/textArea";
 import Loader from "../../Components/loader";
 import DropDown from "../../Components/dropdown";
+import { ImCross } from "react-icons/im"
 
 const Series = () => {
 
@@ -34,10 +35,11 @@ const Series = () => {
         deleteLoader,
         addLoader,
         getLoader,
-        updatePopup,
-        setUpdatePopup,
+        updatePopup, seriesOnClick,
+        setUpdatePopup, filterOnChange,
         genre, option, onChangeDropDown, genreSeries, setFileId, setFile, genreId, setGenreId,
-        updateSeriesHandler, updateLoader, setGenreNameHandler, genreSeriesIdHandler, genreValue
+        updateSeriesHandler, updateLoader, setGenreNameHandler, genreSeriesIdHandler, genreValue,
+        clearFilter, setClearFilter, setFilterValue, filterValue, navigate
     } = useSeries()
 
     return (
@@ -53,6 +55,20 @@ const Series = () => {
                         </div>
                     </Tooltip>
                 </div>
+                <div className="flex">
+                    <DropDown options={option} className={"w-[10rem]"} value={filterValue} onChange={filterOnChange} placeholder={"Select Genre..."} />
+                    <Tooltip content="Clear Filter" className="text-xs px-2 py-1 bg-gray-500">
+                        <div className="p-3 text-gray-500 cursor-pointer" onClick={() => {
+                            setClearFilter(!clearFilter)
+                            setFilterValue({
+                                value: "",
+                                label: ""
+                            })
+                        }}>
+                            <ImCross className="h-[1.5rem] w-[1.5rem]" />
+                        </div>
+                    </Tooltip>
+                </div>
                 <div className="flex flex-wrap">
                     {
                         getLoader ? <div className=" h-3/5 w-full flex justify-center items-center"><Loader size={"3rem"} className={"mt-[10rem]"} /></div>
@@ -61,6 +77,7 @@ const Series = () => {
                                 name={e.name}
                                 description={e.description}
                                 thumbnail={e?.thumbnail_id?.path}
+                                onClick={() => navigate(`/seasons?id=${e?._id}`)}
                                 deletePopup={() => {
                                     setDeletePopup(true)
                                     setSeriesId(e?._id)

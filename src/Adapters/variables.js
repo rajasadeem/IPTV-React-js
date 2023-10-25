@@ -23,3 +23,16 @@ export const DELETE_SERIES = "series"
 export const UPDATE_SERIES = "series/"
 export const GENRE_SERIES = "genre-series"
 export const UPDATE_GENRE_SERIES = "genre-series/"
+
+//seasons
+export const GET_SEASONS = "season"
+export const ADD_SEASON = "season"
+export const UPDATE_SEASON = "season/"
+export const DELETE_SEASON = "season/"
+
+//episodes
+export const GET_EPISODES = "episode"
+export const ADD_EPISODE = "episode"
+export const UPDATE_EPISODE = "episode/"
+export const DELETE_EPISODE = "episode/"
+

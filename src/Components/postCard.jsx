@@ -2,13 +2,13 @@ import React from "react";
 import { Card, CardBody, CardFooter, Tooltip, Typography } from "@material-tailwind/react";
 import { MdDelete, MdUpdate } from "react-icons/md";
 
-const PostCard = ({ thumbnail, name, description, updatePopup, deletePopup, genre }) => {
+const PostCard = ({ thumbnail, name, description, updatePopup, deletePopup, genre, onClick }) => {
 
     return (
         <Card className="max-w-[18rem] overflow-hidden shadow-md rounded-xl cursor-pointer mb-4 mr-2">
             <img src={thumbnail ? thumbnail : `${process.env.PUBLIC_URL}/dummyThumbnail.jpg`} className="w-[20rem] h-[10rem]" />
             <CardBody className="p-2">
-                <Typography variant="h4" className="text-gray-500">
+                <Typography variant="h4" className="text-gray-500" onClick={onClick}>
                     {name}
                 </Typography>
                 <Typography variant="lead" className="mt-2 text-xs text-gray-500 min-h-[5rem]">
