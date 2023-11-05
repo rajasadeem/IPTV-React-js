@@ -38,7 +38,7 @@ const Season = () => {
                          </Tooltip>
                           : ""
                     }
-                    <Tooltip content="Add New Genre" className="text-xs px-2 py-1 bg-gray-500">
+                    <Tooltip content="Add New Season" className="text-xs px-2 py-1 bg-gray-500">
                         <div className="p-2 text-gray-500 cursor-pointer" onClick={() => {
                             // setGenreName("")
                             setAddPopup(true)
